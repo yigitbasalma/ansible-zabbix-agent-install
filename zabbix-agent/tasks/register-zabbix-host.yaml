@@ -1,0 +1,97 @@
+---
+  - name: Register host DNS
+    delegate_to: localhost
+    run_once: true
+    set_fact:
+      target_dns: "{{ lookup('dig', target_host + '/PTR').rstrip('.') | regex_search('[a-zA-Z0-9]+.local') }}"
+    when:
+      - service_name != "agent"
+
+  - name: Get hostname from host inside if not registered DNS
+    shell: hostname
+    register: hostname_from_host
+    when:
+      - service_name == "agent"
+
+  - name: Register host DNS (From hostname)
+    set_fact:
+      target_dns: "{{ hostname_from_host.stdout }}"
+    when:
+      - hostname_from_host.changed
+
+  - name: Gather facts using SNMP version 3 (AES)
+    community.general.snmp_facts:
+      host: "{{ target_host }}"
+      version: v3
+      level: authPriv
+      integrity: sha
+      privacy: aes
+      username: snmpv3
+      authkey: snmpv3
+      privkey: snmpv3
+      timeout: 2
+    delegate_to: "{{ zabbix_server }}"
+    register: snmp_v3_aes
+    ignore_errors: yes
+    when:
+      - service_name == "snmp"
+
+  - name: Gather facts using SNMP version 3 (DES)
+    community.general.snmp_facts:
+      host: "{{ target_host }}"
+      version: v3
+      level: authPriv
+      integrity: sha
+      privacy: des
+      username: snmpv3
+      authkey: snmpv3
+      privkey: snmpv3
+      timeout: 2
+    delegate_to: "{{ zabbix_server }}"
+    register: snmp_v3_des
+    ignore_errors: yes
+    when:
+      - service_name == "snmp"
+
+  - name: Change priv protocol
+    set_fact:
+      priv_protocol: 1
+    when:
+      - snmp_v3_aes.ansible_facts.ansible_sysname is defined
+
+  - name: Set facts from AES
+    set_fact:
+      target_dns: "{{ snmp_v3_aes.ansible_facts.ansible_sysname }}"
+    when:
+      - target_dns | length == 0
+      - snmp_v3_aes.ansible_facts.ansible_sysname is defined
+
+  - name: Set facts from DES
+    set_fact:
+      target_dns: "{{ snmp_v3_des.ansible_facts.ansible_sysname }}"
+    when:
+      - target_dns | length == 0
+      - snmp_v3_des.ansible_facts.ansible_sysname is defined
+
+  - name: Register zabbix host to server
+    delegate_to: localhost
+    run_once: true
+    become: no
+    zabbix_register_manager:
+      zabbix_api: "{{ zabbix_api }}"
+      zabbix_username: "{{ zabbix_username }}"
+      zabbix_password: "{{ zabbix_password }}"
+      target_ip: "{{ target_host }}"
+      target_dns: "{{ target_dns }}"
+      zabbix_server: "{{ zabbix_server | default('') }}"
+      applications_info: "{{ applications_info }}"
+      host_tags: "{{ tags }}"
+      service_name: "{{ service_name }}"
+      update: "{{ update }}"
+      remove_before_update: "{{ remove_before_update }}"
+      snmp_priv_protocol: "{{ priv_protocol }}"
+      defaults: "{{ defaults }}"
+    register: register_host_to_zabbix
+
+  - debug:
+      msg: "{{ register_host_to_zabbix }}"

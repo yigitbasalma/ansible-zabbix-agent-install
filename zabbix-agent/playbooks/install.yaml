@@ -1,0 +1,75 @@
+- name: Create Inventory
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Test SSH Connectivity
+      local_action: shell timeout 5 ssh -o ConnectTimeout=2 -o PasswordAuthentication=no -o StrictHostKeyChecking=no {{ ansible_user }}@{{ target_host }} "echo success"
+      register: ssh_enabled
+      ignore_errors: yes
+
+    - name: End Play If Type Agent and Cannot Connect with SSH
+      meta: end_play
+      when:
+        - service_name == "agent"
+        - ssh_enabled.stdout.find("success") == -1
+
+    - name: Create in-memory Ansible inventory
+      add_host:
+        name: "{{ target_host }}"
+        groups: target
+
+- name: Install and Configure Agent
+  hosts: target
+  become: yes
+  gather_facts: "{{ gather_facts | default('yes') }}"
+  tasks:
+    - name: Import common variables
+      include_vars:
+        file: "{{ item }}"
+      with_items:
+        - "../vars/main.yaml"
+
+    - name: Import OS depended variables
+      include_vars:
+        file: "{{ item }}"
+      with_items:
+        - "../vars/{{ ansible_distribution }}{{ ansible_distribution_major_version }}.yaml"
+      when:
+        - service_name == "agent"
+
+    - name: Install required libraries
+      pip:
+        name: "{{ required_python_libraries }}"
+        extra_args: --user
+      delegate_to: localhost
+      run_once: yes
+
+    - name: Install required libraries
+      pip:
+        name: "{{ required_python_libraries_for_hosts }}"
+        extra_args: --user
+      delegate_to: "{{ zabbix_server }}"
+      run_once: yes
+
+    - name: Include tasks (Agent install with SSH)
+      include_tasks: "{{ item }}"
+      loop:
+        - ../tasks/install-zabbix-agent.yaml
+        - ../tasks/create-necessary-folders.yaml
+        - ../tasks/copy-config-files.yaml
+        - ../tasks/copy-script-files.yaml
+      tags:
+        - install-agent
+      when:
+        - service_name == "agent"
+
+    - name: Register host
+      include_tasks: ../tasks/register-zabbix-host.yaml
+      tags:
+        - register-host
+
+    # - name: Include tasks (JMX agent install)
+    #   include_tasks: ../tasks/install-zabbix-jmx-agent.yaml
+    #   when: register_host_to_zabbix.interfaces.jmx
+    #   tags:
+    #     - install-jmx-agent

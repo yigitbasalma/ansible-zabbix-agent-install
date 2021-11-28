@@ -1,0 +1,20 @@
+---
+  - name: Add zabbix repos
+    yum:
+      name: "{{ agent_repo }}"
+      state: present
+      disable_gpg_check: yes
+      validate_certs: no
+    when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+
+  - name: install zabbix agent
+    package:
+      name: zabbix-agent
+      state: latest
+
+  - name: Restart zabbix-agent service
+    service:
+      name: zabbix-agent
+      state: restarted
+      enabled: yes
+      sleep: 5

@@ -1,0 +1,81 @@
+# Defaults
+target_dns: ""
+priv_protocol: 0  # SNMP priv protocol. 0: DES, 1: AES
+
+# Playbook configs
+required_python_libraries:
+  - pyzabbix
+  - dnspython
+  - pysnmp
+required_python_libraries_for_hosts:
+  - pysnmp
+
+# Scripts configs
+custom_script_base: /var/lib/zabbix/custom-scripts
+user_script_config_path: /etc/zabbix/zabbix_agentd.d/config
+
+# Zabbix register manager configs
+zabbix_api: http://zabbix.local/zabbix
+zabbix_username: Admin
+zabbix_password: zabbix
+
+# Defaults
+defaults:
+  agent:
+    port: 10050
+    templates:
+      - RedHat Base Linux
+    groups:
+      - Other Servers (Agent)
+    teams: bar
+  snmp:
+    port: 161
+    templates:
+      - Template Module Generic SNMPv3
+    groups:
+      - Other Servers (SNMP)
+    teams: foo
+  jmx:
+    port: 7199
+    templates:
+      - Template App Generic Java JMX
+    groups:
+      - Other Servers (JMX)
+    teams: foo,bar
+
+# Host configs
+tags:
+  environment: "get_environment"
+  teams: "get_teams"
+  application-type: "get_application_type"
+
+applications_info:
+  - name: Others
+    templates: []
+    groups: []
+    macros: {}
+    teams: ""
+  - name: Nginx Web Server
+    templates:
+      - RedHat Base Linux
+    groups:
+      - Web Servers
+    rules:
+      - patterns:
+          - ^foo.*(nginx).*[0-9]+
+        teams: foo
+      - patterns:
+          - ^bar.*(nginx).*[0-9]+
+        teams: bar
+  - name: Citrix Netscaler
+    templates:
+      - Citrix Netscaler Server SNMP
+    groups:
+      - Citrix Netscaler
+    environment: production
+    exclude_ip:
+      - 192.168.1.100
+    rules:
+      - patterns:
+          - ^(NetScaler)
+        teams: netops

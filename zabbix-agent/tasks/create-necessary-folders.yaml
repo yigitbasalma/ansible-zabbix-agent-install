@@ -1,0 +1,10 @@
+---
+  - name: Create custom script base path
+    file:
+      name: "{{ custom_script_base }}"
+      state: directory
+
+  - name: Create custom script config path
+    file:
+      name: "{{ user_script_config_path }}"
+      state: directory

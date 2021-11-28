@@ -1,0 +1,40 @@
+# This is a configuration file for Zabbix Java Gateway.
+# It is sourced by "/etc/init.d/zabbix-java-gateway".
+
+### Option: zabbix.listenIP
+#	IP address to listen on.
+#
+# Mandatory: no
+# Default:
+# LISTEN_IP="0.0.0.0"
+
+### Option: zabbix.listenPort
+#	Port to listen on.
+#
+# Mandatory: no
+# Range: 1024-32767
+# Default:
+
+LISTEN_PORT={{ defaults.jmx.port }}
+
+### Option: zabbix.pidFile
+#	Name of PID file.
+#
+# Mandatory: no
+# Default:
+# PID_FILE=
+# PID_FILE="/var/run/zabbix/zabbix_java_gateway.pid"
+
+### Option: zabbix.startPollers
+#	Number of worker threads to start.
+#
+# Mandatory: no
+# Range: 1-1000
+# Default:
+# START_POLLERS=5
+
+### JVM options (passed to /usr/bin/java).
+#
+# Mandatory: no
+#
+# JAVA_OPTIONS="-Xmx256m"

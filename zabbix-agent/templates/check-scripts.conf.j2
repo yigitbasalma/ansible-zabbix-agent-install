@@ -1,0 +1,64 @@
+# Couchbase Control Scripts Area
+UserParameter=couchbase.server.health[*], /usr/bin/python {{ custom_script_base }}/ServiceCheckScripts/couchbase_service_check.py
+
+# Script Sync Key Area
+UserParameter=scripts.sync[*], /usr/bin/python {{ custom_script_base }}/OperationalScripts/sync_from_nfs.py
+
+# Network Device Backup Key Area
+UserParameter=backup.netdev[*], /usr/bin/python {{ custom_script_base }}/OperationalScripts/get_network_device_backup.py --device-identifier $1
+
+# Netstat Output Key Area
+UserParameter=netstat.conn.state[*], /usr/bin/python {{ custom_script_base }}/ServiceCheckScripts/netstat.py --state-name $1
+
+# Neterror and Drop Output Key Area
+UserParameter=netstat.conn.error[*], /usr/bin/python {{ custom_script_base }}/ServiceCheckScripts/neterror.py --state-name $1
+
+# Docker VG Allocation Key Area
+UserParameter=vg.allocated.pool[*], sudo /usr/bin/python {{ custom_script_base }}/ServiceCheckScripts/vgdocker.py --state-name $1
+
+# MTA Engine queue size Key Area
+UserParameter=mta.queue.size[*], /bin/bash {{ custom_script_base }}/ServiceCheckScripts/mtaqueue.sh
+
+# MAIL Rabbitmq queue size Key Area
+UserParameter=rabbitmq.queue.size[*], /usr/bin/python {{ custom_script_base }}/ServiceCheckScripts/rabbitmqsize.py --queue-name $1
+
+# MTR Check for Real IP Key Area
+UserParameter=mtr.check[*], /bin/bash {{ custom_script_base }}/ServiceCheckScripts/mtrcheck.sh $1 2>/dev/null
+
+# mongodb stats
+UserParameter=mongodb.zabbix.sender,/usr/local/bin/mongodb-stats.sh
+
+# MySQL
+UserParameter=mysql.ping[*], mysqladmin -h"$1" -P"$2" ping
+UserParameter=mysql.get_status_variables[*], mysql -h"$1" -P"$2" -sNX -e "show global status"
+UserParameter=mysql.version[*], mysqladmin -s -h"$1" -P"$2" version
+UserParameter=mysql.db.discovery[*], mysql -h"$1" -P"$2" -sN -e "show databases"
+UserParameter=mysql.dbsize[*], mysql -h"$1" -P"$2" -sN -e "SELECT COALESCE(SUM(DATA_LENGTH + INDEX_LENGTH),0) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='$3'"
+UserParameter=mysql.replication.discovery[*], mysql -h"$1" -P"$2" -sNX -e "show slave status"
+UserParameter=mysql.slave_status[*], mysql -h"$1" -P"$2" -sNX -e "show slave status"
+
+# PostgreSQL
+UserParameter=pgsql.bgwriter[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.bgwriter.sql"
+UserParameter=pgsql.connections.sum[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.connections.sum.sql"
+UserParameter=pgsql.connections[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.connections.sql"
+UserParameter=pgsql.connections.prepared[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.connections.prepared.sql"
+UserParameter=pgsql.dbstat.sum[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.dbstat.sum.sql"
+UserParameter=pgsql.dbstat[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.dbstat.sql"
+UserParameter=pgsql.transactions[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.transactions.sql"
+UserParameter=pgsql.config.hash[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.config.hash.sql"
+UserParameter=pgsql.wal.stat[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.wal.stat.sql"
+UserParameter=pgsql.locks[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.locks.sql"
+UserParameter=pgsql.queries[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -v tmax=$5 -f "/var/lib/zabbix/postgresql/pgsql.query.time.sql"
+UserParameter=pgsql.uptime[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.uptime.sql"
+UserParameter=pgsql.cache.hit[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.cache.hit.sql"
+UserParameter=pgsql.scans[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.scans.sql"
+UserParameter=pgsql.frozenxid[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.frozenxid.sql"
+UserParameter=pgsql.discovery.db[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.discovery.db.sql"
+UserParameter=pgsql.db.size[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -c "SELECT pg_database_size('$5')"
+UserParameter=pgsql.ping[*], pg_isready -h "$1" -p "$2" -U "$3" -d "$4"
+UserParameter=pgsql.ping.time[*], LANG=C.UTF-8 psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.ping.time.sql"
+UserParameter=pgsql.version[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -c "SELECT version();"
+UserParameter=pgsql.replication.count[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -c "SELECT count(*) FROM pg_stat_replication"
+UserParameter=pgsql.replication.recovery_role[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.replication.recovery_role.sql"
+UserParameter=pgsql.replication.lag.sec[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.replication.lag.sql"
+UserParameter=pgsql.replication.status[*], psql -qtAX -h "$1" -p "$2" -U "$3" -d "$4" -f "/var/lib/zabbix/postgresql/pgsql.replication.status.sql"

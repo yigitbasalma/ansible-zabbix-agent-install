@@ -1,0 +1,8 @@
+# Application Server LLD Area
+UserParameter=appserver.discovery[*], sudo -H -u wasadm /usr/bin/python {{ custom_script_base }}/LLDScripts/application_server_identifier.py
+
+# Filesystem LLD Area
+UserParameter=vfs.special.discovery[*], /usr/bin/python {{ custom_script_base }}/LLDScripts/mountpoint_finder.py
+
+# Service Port Key Area
+UserParameter=service.discovery[*], sudo {{ custom_script_base }}/OperationalScripts/service.discovery

@@ -1,0 +1,17 @@
+---
+  - name: Check any JMX template available
+    package:
+      name: zabbix-java-gateway
+      state: latest
+
+  - name: Copy jmx-agent config
+    template:
+      src: ../templates/zabbix_java_gateway.conf.j2
+      dest: /etc/zabbix/zabbix_java_gateway.conf
+
+  - name: Restart zabbix-java-gateway service
+    service:
+      name: zabbix-java-gateway
+      state: restarted
+      enabled: yes
+      sleep: 5

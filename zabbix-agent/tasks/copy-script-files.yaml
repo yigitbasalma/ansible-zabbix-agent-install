@@ -1,0 +1,6 @@
+---
+  - name: Copy script files to the location
+    copy:
+      src: ../files/scripts/
+      dest: "{{ custom_script_base }}/"
+      directory_mode: yes

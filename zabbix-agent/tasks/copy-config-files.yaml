@@ -1,0 +1,20 @@
+---
+  - name: Copy agent config
+    template:
+      src: ../templates/zabbix_agentd.conf.j2
+      dest: /etc/zabbix/zabbix_agentd.conf
+
+  - name: Copy custom script configs
+    template:
+      src: "{{ item.src }}"
+      dest: "{{ user_script_config_path }}/{{ item.dst }}"
+    with_items:
+      - { src: "../templates/check-scripts.conf.j2", dst: "check-scripts.conf" }
+      - { src: "../templates/lld-scripts.conf.j2", dst: "lld-scripts.conf" }
+
+  - name: Copy complex script configs
+    copy:
+      src: "{{ item.src }}"
+      dest: "{{ user_script_config_path }}/{{ item.dst }}"
+    with_items:
+      - { src: "../files/complex-lld-scripts.conf", dst: "complex-lld-scripts.conf" }
