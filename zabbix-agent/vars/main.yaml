@@ -6,9 +6,9 @@ priv_protocol: 0  # SNMP priv protocol. 0: DES, 1: AES
 required_python_libraries:
   - pyzabbix
   - dnspython
+required_python_libraries_for_proxies:
   - pysnmp
-required_python_libraries_for_hosts:
-  - pysnmp
+required_python_libraries_for_servers: []
 
 # Scripts configs
 custom_script_base: /var/lib/zabbix/custom-scripts
