@@ -44,12 +44,21 @@
       delegate_to: localhost
       run_once: yes
 
-    - name: Install required libraries
+    - name: Install required libraries for proxy servers
       pip:
-        name: "{{ required_python_libraries_for_hosts }}"
+        name: "{{ required_python_libraries_for_proxies }}"
         extra_args: --user
       delegate_to: "{{ zabbix_server }}"
       run_once: yes
+      
+    - name: Install required libraries for monitoring servers
+      pip:
+        name: "{{ required_python_libraries_for_servers }}"
+        extra_args: --user
+      delegate_to: "{{ target_host }}"
+      run_once: yes
+      when:
+        - service_name == "agent"
 
     - name: Include tasks (Agent install with SSH)
       include_tasks: "{{ item }}"
@@ -67,9 +76,3 @@
       include_tasks: ../tasks/register-zabbix-host.yaml
       tags:
         - register-host
-
-    # - name: Include tasks (JMX agent install)
-    #   include_tasks: ../tasks/install-zabbix-jmx-agent.yaml
-    #   when: register_host_to_zabbix.interfaces.jmx
-    #   tags:
-    #     - install-jmx-agent
